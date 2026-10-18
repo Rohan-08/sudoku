@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Sudoku</title>
+  <meta name="description" content="Sudoku game with hints, difficulty levels, timer, history and a solver.">
+  <meta name="theme-color" content="#f6f7fb" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#14161c" media="(prefers-color-scheme: dark)">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Sudoku">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <h1>Sudoku</h1>
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-view="play" role="tab">Play</button>
+      <button class="tab" data-view="solver" role="tab">Solver</button>
+      <button class="tab" data-view="history" role="tab">History</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ================= PLAY ================= -->
+    <section id="view-play" class="view active">
+      <div class="layout">
+        <div class="board-col">
+          <div class="status-bar">
+            <span id="difficulty-label" class="pill">Medium</span>
+            <span class="mistakes">Mistakes <b id="mistakes">0</b>/3</span>
+            <span class="timer">
+              <span id="timer">00:00</span>
+              <button id="pause-btn" class="icon-btn small" aria-label="Pause">
+                <svg viewBox="0 0 24 24"><path d="M7 5h3v14H7zM14 5h3v14h-3z"/></svg>
+              </button>
+            </span>
+          </div>
+          <div class="board-wrap">
+            <div id="board" class="board" aria-label="Sudoku board"></div>
+            <div id="pause-overlay" class="overlay hidden">
+              <p>Paused</p>
+              <button id="resume-btn" class="btn primary">Resume</button>
+            </div>
+            <div id="loading-overlay" class="overlay hidden"><p>Generating puzzle…</p></div>
+          </div>
+        </div>
+
+        <div class="controls-col">
+          <div id="hint-panel" class="hint-panel hidden">
+            <div class="hint-head">
+              <span class="hint-title">💡 Hint</span>
+              <button id="hint-close" class="icon-btn small" aria-label="Close hint">✕</button>
+            </div>
+            <p id="hint-text"></p>
+            <div class="hint-actions">
+              <button id="hint-show" class="btn">Show me where</button>
+              <button id="hint-fill" class="btn primary">Fill it in</button>
+            </div>
+          </div>
+
+          <div class="toolbar">
+            <button id="undo-btn" class="tool">
+              <svg viewBox="0 0 24 24"><path d="M12.5 8c-2.65 0-5.05 1-6.9 2.6L2 7v9h9l-3.62-3.62A7.95 7.95 0 0 1 20.36 16l2.37-.78A10.5 10.5 0 0 0 12.5 8z"/></svg>
+              <span>Undo</span>
+            </button>
+            <button id="erase-btn" class="tool">
+              <svg viewBox="0 0 24 24"><path d="M16.24 3.56 21.19 8.5a2 2 0 0 1 0 2.83L12 20.5h8v2H9.66L2.81 15.67a2 2 0 0 1 0-2.83L13.41 2.1a2 2 0 0 1 2.83 0zM4.22 14.26 9.17 19.2h.01l3.53-3.54-4.95-4.95-3.54 3.54z"/></svg>
+              <span>Erase</span>
+            </button>
+            <button id="notes-btn" class="tool">
+              <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+              <span>Notes <b id="notes-state">off</b></span>
+            </button>
+            <button id="hint-btn" class="tool">
+              <span class="badge" id="hint-count">3</span>
+              <svg viewBox="0 0 24 24"><path d="M9 21h6v-1.5H9V21zm3-19a7 7 0 0 0-4 12.74V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.26A7 7 0 0 0 12 2z"/></svg>
+              <span>Hint</span>
+            </button>
+          </div>
+
+          <div id="numpad" class="numpad"></div>
+
+          <button id="new-game-btn" class="btn primary wide">New game</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SOLVER ================= -->
+    <section id="view-solver" class="view">
+      <div class="layout">
+        <div class="board-col">
+          <p class="muted solver-intro">Type in any puzzle, then solve it or step through it with explanations.</p>
+          <div class="board-wrap"><div id="solver-board" class="board" aria-label="Solver board"></div></div>
+        </div>
+        <div class="controls-col">
+          <div id="solver-msg" class="hint-panel"><p>Tap a cell and enter the numbers from your puzzle.</p></div>
+          <div id="solver-numpad" class="numpad"></div>
+          <div class="solver-actions">
+            <button id="solver-step" class="btn">Next step</button>
+            <button id="solver-solve" class="btn primary">Solve</button>
+            <button id="solver-clear" class="btn">Clear</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= HISTORY ================= -->
+    <section id="view-history" class="view">
+      <div class="history">
+        <div id="stats" class="stats"></div>
+        <div class="history-head">
+          <h2>Games played</h2>
+          <button id="clear-history" class="btn small">Clear</button>
+        </div>
+        <div class="table-wrap">
+          <table class="history-table">
+            <thead><tr><th>Date</th><th>Difficulty</th><th>Result</th><th>Time</th><th>Hints</th></tr></thead>
+            <tbody id="history-body"></tbody>
+          </table>
+        </div>
+        <p id="history-empty" class="muted center">No games yet — go play one!</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- ================= MODALS ================= -->
+  <div id="modal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <h2 id="modal-title"></h2>
+      <div id="modal-body"></div>
+      <div id="modal-actions" class="modal-actions"></div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="js/sudoku.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
